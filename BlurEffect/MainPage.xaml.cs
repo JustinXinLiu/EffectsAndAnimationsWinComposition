@@ -9,10 +9,14 @@ using Windows.UI.Xaml.Input;
 
 namespace BlurEffect
 {
+    /// <summary>
+    /// Please note that I could simply things by using the TouchArea Rectangle as the container visual to host the effect visual, 
+    /// but I wanted to prove a point that I could use expression key frame animation to manipulate multiple elements at the same time!
+    /// </summary>
     public sealed partial class MainPage : Page
     {
         Compositor _compositor;
-        Visual _touchAreaVisual;
+        ContainerVisual _touchAreaVisual;
         EffectVisual _effectVisual;
         Vector3KeyFrameAnimation _animation;
         float _x;
