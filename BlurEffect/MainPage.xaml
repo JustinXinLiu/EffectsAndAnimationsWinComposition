@@ -1,0 +1,9 @@
+﻿<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:BlurEffect" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Xaml="using:Microsoft.Graphics.Canvas.UI.Xaml" x:Class="BlurEffect.MainPage" mc:Ignorable="d">
+
+    <Grid x:Name="LayoutRoot" Loaded="LayoutRoot_Loaded" Background="Black">
+        <Grid x:Name="ImagePanel" HorizontalAlignment="Center" VerticalAlignment="Center" Width="356" Height="200">
+            <Image x:Name="Image" Source="Assets/Food.jpg" Stretch="UniformToFill" Width="356" Height="200" />
+            <Rectangle x:Name="TouchArea" Fill="Transparent" ManipulationMode="TranslateX" ManipulationStarted="TouchArea_ManipulationStarted" ManipulationDelta="TouchArea_ManipulationDelta" ManipulationCompleted="TouchArea_ManipulationCompleted" />
+        </Grid>
+    </Grid>
+</Page>
