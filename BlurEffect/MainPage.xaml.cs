@@ -1,20 +1,18 @@
 ﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Effects;
+using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Graphics.Imaging;
-using Windows.Storage.Streams;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Media;
 
 namespace BlurEffect
 {
@@ -127,27 +125,10 @@ namespace BlurEffect
 
         async Task CreateResourcesAsync(CanvasControl sender)
         {
-            // give it a little bit delay to ensure the image is load, ideally you want to Image.ImageOpened event instead
-            await Task.Delay(200);
-
-            using (var stream = new InMemoryRandomAccessStream())
-            {
-                // get the stream from the background image
-                var target = new RenderTargetBitmap();
-                await target.RenderAsync(this.Image2);
-
-                var pixelBuffer = await target.GetPixelsAsync();
-                var pixels = pixelBuffer.ToArray();
-
-                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, stream);
-                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, (uint)target.PixelWidth, (uint)target.PixelHeight, 96, 96, pixels);
-
-                await encoder.FlushAsync();
-                stream.Seek(0);
-
-                // load the stream into our bitmap
-                _bitmap = await CanvasBitmap.LoadAsync(sender, stream);
-            }
+            // here I simply create the bitmap based on an existing image file,
+            // check the LoadAsync overload methods, you can also create one from
+            // an IRandomAccessStream
+            _bitmap = await CanvasBitmap.LoadAsync(sender, "Assets/Food.jpg");
         }
 
         void Canvas_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -156,7 +137,7 @@ namespace BlurEffect
             {
                 var blur = new GaussianBlurEffect
                 {
-                    BlurAmount = 50.0f, // increase this to make it more blurry or vise versa.
+                    BlurAmount = 100.0f, // increase this to make it more blurry or vise versa.
                     //Optimization = EffectOptimization.Balanced, // default value
                     //BorderMode = EffectBorderMode.Soft // default value
                     Source = _bitmap
