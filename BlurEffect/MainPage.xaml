@@ -11,8 +11,8 @@
                 <Grid.Clip>
                     <RectangleGeometry x:Name="Clip" Rect="0, 0, 356, 200" />
                 </Grid.Clip>
+                <Rectangle x:Name="WhiteMask" Fill="White" />
                 <Xaml:CanvasControl x:Name="Canvas" CreateResources="Canvas_CreateResources" Draw="Canvas_Draw" />
-                <Rectangle x:Name="SemitransparentMask" Fill="#BFFFFFFF" />
             </Grid>
             <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Frosted Glass" VerticalAlignment="Top" Foreground="#FF595959" Margin="12,12,0,0" FontWeight="Light" FontSize="26.667" FontStyle="Italic" TextLineBounds="Tight" />
         </Grid>
