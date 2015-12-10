@@ -1,12 +1,15 @@
 ﻿using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI.Composition.Toolkit;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Graphics.Effects;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Windows.UI.Composition;
@@ -26,7 +29,7 @@ namespace BlurEffect
     {
         Compositor _compositor;
         ContainerVisual _touchAreaVisual;
-        EffectVisual _effectVisual;
+        SpriteVisual _visual;
         Vector3KeyFrameAnimation _animation;
         float _x;
 
@@ -39,7 +42,7 @@ namespace BlurEffect
 
         #region Composition
 
-        async void LayoutRoot_Loaded(object sender, RoutedEventArgs e)
+        void LayoutRoot_Loaded(object sender, RoutedEventArgs e)
         {
             // get visuals from xaml object
             _touchAreaVisual = GetVisual(this.TouchArea);
@@ -48,9 +51,18 @@ namespace BlurEffect
             // get compositor
             _compositor = imagePanelVisual.Compositor;
 
+            var width = (float)this.ImagePanel.ActualWidth;
+            var height = (float)this.ImagePanel.ActualHeight;
+
             // load the background image
-            var image = _compositor.DefaultGraphicsDevice.CreateImageFromUri(new Uri("ms-appx:///Assets/White.png"));
-            await image.CompleteLoadAsync();
+            var uri = new Uri("ms-appx:///Assets/White.png");
+            var imageFactory = CompositionImageFactory.CreateCompositionImageFactory(_compositor);
+            var options = new CompositionImageOptions
+            {
+                DecodeWidth = (int)width,
+                DecodeHeight = (int)height
+            };
+            var image = imageFactory.CreateImageFromUri(uri, options);
 
             // currently GaussianBlurEffect is not supported in Composition
             var effectDefination = new SaturationEffect // new GaussianBlurEffect
@@ -62,18 +74,19 @@ namespace BlurEffect
             };
 
             // create the actual effect
+            var surfaceBrush = _compositor.CreateSurfaceBrush(image.Surface);
             var effectFactory = _compositor.CreateEffectFactory(effectDefination);
-            var effect = effectFactory.CreateEffect();
-            effect.SetSourceParameter("Overlay", image);
+            var effectBrush = effectFactory.CreateBrush();
+            effectBrush.SetSourceParameter("Overlay", surfaceBrush);
 
-            // create the effect visual
-            _effectVisual = _compositor.CreateEffectVisual();
-            _effectVisual.Effect = effect;
-            _effectVisual.Opacity = 0.8f;
-            _effectVisual.Size = new Vector2((float)this.ImagePanel.ActualWidth, (float)this.ImagePanel.ActualHeight);
+            // create the visual with the effect
+            _visual = _compositor.CreateSpriteVisual();
+            _visual.Brush = effectBrush;
+            _visual.Opacity = 0.8f;
+            _visual.Size = new Vector2(width, height);
 
             // place the effect visual onto the UI
-            imagePanelVisual.Children.InsertAtTop(_effectVisual);
+            imagePanelVisual.Children.InsertAtTop(_visual);
         }
 
         void TouchArea_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -99,7 +112,7 @@ namespace BlurEffect
             // set the pan rectangle's visual's offset
             _touchAreaVisual.Offset = new Vector3(_x, 0.0f, 0.0f);
             // kick off the effect visual's animation so to have both visuals' offset in sync
-            _effectVisual.ConnectAnimation("Offset", _animation).Start();
+            _visual.StartAnimation("Offset", _animation);
         }
 
         void TouchArea_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -107,13 +120,16 @@ namespace BlurEffect
             // once the finger lifts up, add another key frame and
             // kick off the finish animation to roll back the visuals' offset
             _animation.InsertKeyFrame(1.0f, new Vector3());
-            _effectVisual.ConnectAnimation("Offset", _animation).Start();
-            _touchAreaVisual.ConnectAnimation("Offset", _animation).Start();
+            _visual.StartAnimation("Offset", _animation);
+            _touchAreaVisual.StartAnimation("Offset", _animation);
         }
 
-        static ContainerVisual GetVisual(FrameworkElement element)
+        static ContainerVisual GetVisual(UIElement element)
         {
-            return (ContainerVisual)ElementCompositionPreview.GetContainerVisual(element);
+            var hostVisual = ElementCompositionPreview.GetElementVisual(element);
+            ContainerVisual root = hostVisual.Compositor.CreateContainerVisual();
+            ElementCompositionPreview.SetElementChildVisual(element, root);
+            return root;
         }
 
         #endregion

@@ -46,6 +46,5 @@
 
   <Capabilities>
     <Capability Name="internetClient" />
-    <rescap:Capability Name="previewUiComposition"></rescap:Capability>
   </Capabilities>
 </Package>
