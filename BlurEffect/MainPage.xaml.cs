@@ -30,7 +30,7 @@ namespace BlurEffect
         Compositor _compositor;
         ContainerVisual _touchAreaVisual;
         SpriteVisual _visual;
-        Vector3KeyFrameAnimation _animation;
+        ScalarKeyFrameAnimation _animation;
         float _x;
 
         CanvasBitmap _bitmap;
@@ -96,8 +96,8 @@ namespace BlurEffect
             // so I'd only need to remove the keyframe (_animation.InsertKeyFrame(1.0f, new Vector3());)
             // rather than create a new animation instance
             _x = 0.0f;
-            _animation = _compositor.CreateVector3KeyFrameAnimation();
-            _animation.InsertExpressionKeyFrame(0.0f, "touch.Offset");
+            _animation = _compositor.CreateScalarKeyFrameAnimation();
+            _animation.InsertExpressionKeyFrame(0.0f, "touch.Offset.X");
             _animation.SetReferenceParameter("touch", _touchAreaVisual);
         }
 
@@ -112,16 +112,16 @@ namespace BlurEffect
             // set the pan rectangle's visual's offset
             _touchAreaVisual.Offset = new Vector3(_x, 0.0f, 0.0f);
             // kick off the effect visual's animation so to have both visuals' offset in sync
-            _visual.StartAnimation("Offset", _animation);
+            _visual.StartAnimation("Offset.X", _animation);
         }
 
         void TouchArea_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             // once the finger lifts up, add another key frame and
             // kick off the finish animation to roll back the visuals' offset
-            _animation.InsertKeyFrame(1.0f, new Vector3());
-            _visual.StartAnimation("Offset", _animation);
-            _touchAreaVisual.StartAnimation("Offset", _animation);
+            _animation.InsertKeyFrame(1.0f, 0.0f);
+            _visual.StartAnimation("Offset.X", _animation);
+            _touchAreaVisual.StartAnimation("Offset.X", _animation);
         }
 
         static ContainerVisual GetVisual(UIElement element)
